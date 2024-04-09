@@ -9,6 +9,7 @@ export interface ViewerSettings {
 	NewPane: boolean;
 	Beginning: string;
 	Heading: string;
+	IgnoreEmptyHeading: boolean;
 	Spacing: number;
 	Filter: string;
 	Future: boolean;
@@ -18,11 +19,12 @@ export interface ViewerSettings {
 }
 
 export const DEFAULT_SETTINGS: ViewerSettings = {
-	Filename: "Viewer",
+	Filename: "Daily Notes Viewer",
 	Folder: "",
 	NewPane: false,
 	Beginning: "",
 	Heading: "",
+	IgnoreEmptyHeading: false,
 	Spacing: 0,
 	Filter: "recent",
 	Future: false,
@@ -139,6 +141,19 @@ export class ViewerSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.settings.Heading = value;
 						// this.applySettingsUpdate();
+						this.plugin.saveSettings();
+						this.plugin.updateFileOnSettingChange();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName(t("Ignore empty specified Heading"))
+			.setDesc(t("The empty content under the specified heading not to display in Viewer. (Default: OFF)"))
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.IgnoreEmptyHeading)
+					.onChange((value) => {
+						this.plugin.settings.IgnoreEmptyHeading = value;
 						this.plugin.saveSettings();
 						this.plugin.updateFileOnSettingChange();
 					})

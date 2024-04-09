@@ -1,33 +1,43 @@
 import { App, TFile } from "obsidian";
-import { getAllDailyNotes, getDateUID } from "obsidian-daily-notes-interface";
+import { getDailyNoteSettings, getAllDailyNotes, getDateUID } from "obsidian-daily-notes-interface";
 import moment from "moment";
-import { ViewerSettings } from "./setting";
+import { ViewerSettings } from "./settings";
 
 export const createOrUpdateViewer = async (
 	app: App,
-	setting: ViewerSettings
+	settings: ViewerSettings
 ): Promise<void> => {
 	// 获取 daily notes 的 basename
 	let allDailyNotesBasename: string[];
-	if (setting.Filter === "recent") {
-		allDailyNotesBasename = getRecent(setting);
-	} else if (setting.Filter === "range") {
-		allDailyNotesBasename = getRange(setting);
+	if (settings.Filter === "recent") {
+		allDailyNotesBasename = getRecent(settings);
+	} else if (settings.Filter === "range") {
+		allDailyNotesBasename = getRange(settings);
 	}
 
 	// 将 basename 转成链接
 	let links: string[] = [];
 	for (let dailyNote of allDailyNotesBasename) {
+		if (settings.IgnoreEmptyHeading) { // 过滤指定标题后的内容为空的 Daily Note
+			const folder = getDailyNoteSettings().folder
+			let file = app.vault.getAbstractFileByPath(`${folder}/${dailyNote}.md`) as TFile
+			let content = await app.vault.cachedRead(file)
+			let headingNotEmptyRegExp = new RegExp(`(?<=(^#+)\\s+)${settings.Heading}\n*[^\n]+\n*(?=(\n^#+))`, 'gm')
+			if (!headingNotEmptyRegExp.test(content)) {
+				continue
+			}
+		}
+
 		let linkText: string;
 		linkText =
-			setting.Heading?.length > 0
-				? `${dailyNote}` + "#^" + setting.Heading
+			settings.Heading?.length > 0
+				? `${dailyNote}` + "#^" + settings.Heading
 				: `${dailyNote}`; // 显示全部内容或指定标题后的内容
 		links.push(`![[${linkText}]]`);
 	}
 
 	let fileText: string = "";
-	let spacing = setting.Spacing;
+	let spacing = settings.Spacing;
 	for (let link of links) {
 		fileText += `${link}\n`;
 
@@ -38,12 +48,12 @@ export const createOrUpdateViewer = async (
 	}
 
 	// 设置开头的内容
-	let beginning = setting.Beginning;
+	let beginning = settings.Beginning;
 
 	// 检测 Viewer 文件是否存在，创建 Viewer 文件或更新 Viewer 内容
 	let pathRegex = /^\s*$/;
-	let path = getPath(setting);
-	let filename = setting.Filename;
+	let path = getViewerPath(settings);
+	let filename = settings.Filename;
 	let file = app.vault.getAbstractFileByPath(path) as TFile;
 	if (!pathRegex.test(filename)) {
 		let contentNew = `${beginning}\n${fileText}`;
@@ -60,7 +70,7 @@ export const createOrUpdateViewer = async (
 	}
 };
 
-const getRecent = (setting: ViewerSettings) => {
+const getRecent = (settings: ViewerSettings) => {
 	// 获取 today note 的 UID
 	let now = moment();
 	let today = getDateUID(now, "day");
@@ -69,7 +79,7 @@ const getRecent = (setting: ViewerSettings) => {
 	let allDailyNotes = getAllDailyNotes();
 	let allDailyNotesUID = Object.keys(allDailyNotes).sort().reverse();
 	let allDailyNotesRecent: any = {};
-	if (setting.Future) {
+	if (settings.Future) {
 		for (let i = 0; i < allDailyNotesUID.length; i++) {
 			allDailyNotesRecent[allDailyNotesUID[i]] =
 				allDailyNotes[allDailyNotesUID[i]];
@@ -86,14 +96,14 @@ const getRecent = (setting: ViewerSettings) => {
 	for (let [string, TFile] of Object.entries(allDailyNotesRecent)) {
 		allDailyNotesBasename.push(TFile.basename);
 	}
-	allDailyNotesBasename = allDailyNotesBasename.slice(0, setting.Quantity);
+	allDailyNotesBasename = allDailyNotesBasename.slice(0, settings.Quantity);
 	return allDailyNotesBasename;
 };
 
-const getRange = (setting: ViewerSettings) => {
+const getRange = (settings: ViewerSettings) => {
 	// 获取 Range 的 UID
-	let startDate = moment(setting.Start);
-	let endDate = moment(setting.End);
+	let startDate = moment(settings.Start);
+	let endDate = moment(settings.End);
 	let startDateUID = getDateUID(startDate, "day");
 	let endDateUID = getDateUID(endDate, "day");
 
@@ -102,7 +112,7 @@ const getRange = (setting: ViewerSettings) => {
 	let allDailyNotesUID = Object.keys(allDailyNotes).sort();
 	let allDailyNotesRange: any = {};
 	let dateRegex = /^\d{4}\-\d{2}\-\d{2}$/;
-	if (dateRegex.test(setting.Start) && dateRegex.test(setting.End)) {
+	if (dateRegex.test(settings.Start) && dateRegex.test(settings.End)) {
 		for (let i = 0; i < allDailyNotesUID.length; i++) {
 			if (
 				allDailyNotesUID[i] >= startDateUID &&
@@ -120,9 +130,9 @@ const getRange = (setting: ViewerSettings) => {
 	return allDailyNotesBasename;
 };
 
-export const getPath = (setting: ViewerSettings) => {
-	let filename = setting.Filename;
-	let folder = setting.Folder;
+export const getViewerPath = (settings: ViewerSettings) => {
+	let filename = settings.Filename;
+	let folder = settings.Folder;
 	let pathRegex = /^\s*$/;
 	let path;
 

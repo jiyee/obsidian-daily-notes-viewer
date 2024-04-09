@@ -11,8 +11,8 @@ import {
 	TFile,
 	debounce,
 } from "obsidian";
-import { ViewerSettingTab, DEFAULT_SETTINGS, ViewerSettings } from "./setting";
-import { createOrUpdateViewer, getPath } from "./util";
+import { ViewerSettingTab, DEFAULT_SETTINGS, ViewerSettings } from "./settings";
+import { createOrUpdateViewer, getViewerPath } from "./util";
 import { getDateFromFile } from "obsidian-daily-notes-interface";
 import { t } from "./translations/helper";
 
@@ -27,15 +27,15 @@ export default class ViewerPlugin extends Plugin {
 
 		this.addRibbonIcon(
 			"calendar-glyph",
-			t("Open Viewer"),
+			t("Open Daily Notes Viewer"),
 			async (evt: MouseEvent) => {
 				this.openViewer();
 			}
 		);
 
 		this.addCommand({
-			id: "open-viewer",
-			name: t("Open Viewer"),
+			id: "open-daily-note-viewer",
+			name: t("Open Daily Notes Viewer"),
 			callback: () => {
 				this.openViewer();
 			},
@@ -85,7 +85,7 @@ export default class ViewerPlugin extends Plugin {
 
 	// 当关闭插件时，自动删除 Viewer 文件
 	async onunload() {
-		let path = getPath(this.settings);
+		let path = getViewerPath(this.settings);
 		const isFile = await this.app.vault.adapter.exists(path);
 		if (isFile) {
 			await this.app.vault.adapter.remove(path);
@@ -127,7 +127,7 @@ export default class ViewerPlugin extends Plugin {
 			leaf = this.app.workspace.getLeaf(false);
 		}
 
-		let path = getPath(this.settings);
+		let path = getViewerPath(this.settings);
 		let viewer = this.app.vault.getAbstractFileByPath(path) as TFile;
 		leaf.openFile(viewer);
 	};

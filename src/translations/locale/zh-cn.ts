@@ -1,6 +1,6 @@
 export default {
 	// index.ts
-	"Open Viewer": "打开 Viewer",
+	"Open Daily Notes Viewer": "打开 Daily Notes Viewer",
 
 	// setting.ts
 	"Regular Options": "常规选项",
@@ -28,6 +28,10 @@ export default {
 	"Content under Specified Heading": "显示指定标题下的内容",
 	"The content under the specified heading to display in Viewer.":
 		"显示指定标题下的内容。",
+
+	"Ignore empty specified Heading": "隐藏指定标题下空的内容",
+	"The empty content under the specified heading not to display in Viewer. (Default: OFF)":
+		"隐藏指定标题下空的内容（默认：关闭）。",
 
 	"Size of Spacing": "显示的间距大小",
 	"The size of spacing to display. (Default: 0)":
