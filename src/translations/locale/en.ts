@@ -2,7 +2,7 @@
 
 export default {
 	// index.ts
-	"Open Viewer": "Open Viewer",
+	"Open Daily Notes Viewer": "Open Daily Notes Viewer",
 
 	// setting.ts
 	"Regular Options": "Regular Options",
@@ -31,6 +31,10 @@ export default {
 	"Content under Specified Heading": "Content under Specified Heading",
 	"The content under the specified heading to display in Viewer.":
 		"The content under the specified heading to display in Viewer.",
+
+	"Ignore empty specified Heading": "Ignore empty specified Heading",
+	"The empty content under the specified heading not to display in Viewer. (Default: OFF)":
+		"The empty content under the specified heading not to display in Viewer. (Default: OFF)",
 
 	"Size of Spacing": "Size of Spacing",
 	"The size of spacing to display. (Default: 0)":
